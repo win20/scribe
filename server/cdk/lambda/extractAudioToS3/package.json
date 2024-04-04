@@ -1,0 +1,17 @@
+{
+  "name": "extractaudiotos3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.540.0",
+    "@aws-sdk/lib-storage": "^3.540.0",
+    "ytdl-core": "^4.11.5"
+  }
+}
