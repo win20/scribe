@@ -1,14 +1,30 @@
 package handlers
 
 import (
-	"net/http"
+	"scribe/server/helpers"
+	"scribe/server/service"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func Transcription(c *gin.Context) {
+type Message struct {
+	Url string `json:"url"`
+}
+
+/* When we hit this endpoint, send url to aws...
+   url goes to queue, lambda worker is notified and extracts the audio from video...
+   worker on server picks up audio and transcribes it */
+func InitiateTranscription(c *fiber.Ctx) error {
+	topicArn := helpers.GetDotenv().ScribeTopicArn
 	url := c.Query("url")
-	c.String(http.StatusOK, "URL: %s", url)
+
+	object := Message{
+		Url: url,
+	}
+
+	messageString := helpers.ObjectToString(object)
+	messageId := service.Publish(messageString, topicArn)
+	return c.Status(fiber.StatusOK).SendString(messageId)
 }
 
 func extractAudioFromVideoLink(url string) {

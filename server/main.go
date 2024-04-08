@@ -1,24 +1,19 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"scribe/server/handlers"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	router := gin.Default()
+	app := fiber.New()
 
-	router.GET("/ping", func(ctx *gin.Context) {
-		ctx.IndentedJSON(http.StatusOK, "pong")
-	})
+	app.Get("/", func(c *fiber.Ctx) error {
+        return c.SendString("Hello, World!")
+    })
 
-	// router.GET("/transcription/:url", func(ctx *gin.Context) {
-	// 	test := ctx.Param("url")
-	// 	ctx.String(http.StatusOK, "URL: "+test)
-	// })
+	app.Post("/initiate-transcription", handlers.InitiateTranscription)
 
-	router.POST("/transcription", handlers.Transcription)
-
-	router.Run("localhost:8080")
+	app.Listen(":8000")
 }
