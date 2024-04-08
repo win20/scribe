@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"scribe/server/helpers"
-	"scribe/server/service"
+	"scribe/server/services"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,7 +23,7 @@ func InitiateTranscription(c *fiber.Ctx) error {
 	}
 
 	messageString := helpers.ObjectToString(object)
-	messageId := service.Publish(messageString, topicArn)
+	messageId := services.Publish(messageString, topicArn)
 	return c.Status(fiber.StatusOK).SendString(messageId)
 }
 
