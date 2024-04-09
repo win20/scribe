@@ -8,7 +8,8 @@ import (
 )
 
 type Message struct {
-	Url string `json:"url"`
+	YoutubeUrl string `json:"youtubeUrl"`
+	FilePath string `json:"filePath"`
 }
 
 /* When we hit this endpoint, send url to aws...
@@ -16,10 +17,12 @@ type Message struct {
    worker on server picks up audio and transcribes it */
 func InitiateTranscription(c *fiber.Ctx) error {
 	topicArn := helpers.GetDotenv().ScribeTopicArn
-	url := c.Query("url")
+	youtubeUrl := c.Query("youtubeUrl")
+	filePath := c.Query("filePath")
 
 	object := Message{
-		Url: url,
+		YoutubeUrl: youtubeUrl,
+		FilePath: filePath,
 	}
 
 	messageString := helpers.ObjectToString(object)

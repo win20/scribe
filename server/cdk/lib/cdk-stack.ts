@@ -5,6 +5,7 @@ import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Runtime, Function, Code } from 'aws-cdk-lib/aws-lambda';
 import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import * as path from 'path';
 import { getConfig } from './config';
@@ -48,6 +49,9 @@ export class CdkStack extends Stack {
     api.root.addMethod('POST', extractAudioToS3Integration);
     topic.addSubscription(new SqsSubscription(queue));
     bucket.grantReadWrite(lambdaExtractAudioToS3);
+
+    const eventSource = new SqsEventSource(queue)
+    lambdaExtractAudioToS3.addEventSource(eventSource)
   }
 }
 
