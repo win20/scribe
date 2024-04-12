@@ -2,24 +2,26 @@ import { S3Client } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage";
 import ytdl from "ytdl-core";
 
+const ROOT_FILE_PATH = 'audio/'
+const FILE_TYPE_EXT = '.wav'
+
 export const handler = async (event, context) => {
   for (const record of event.Records) {
-    const bucketName = 'scribe-672047559645-eu-west-1'
+    const bucketName = process.env.SCRIBE_BUCKET_NAME
     const messageBody = JSON.parse(record.body)
     const message = JSON.parse(messageBody.Message)
 
-    const { youtubeUrl, filePath } = {
+    const {jobUuid, youtubeUrl } = {
+      jobUuid: message.jobUuid,
       youtubeUrl: message.youtubeUrl,
-      filePath: message.filePath
     };
 
-    // Download audio from YouTube URL
     const audioStream = ytdl(youtubeUrl, { filter: 'audioonly' });
 
-    // Upload audio stream to S3
+    const fullFilePath = `${ROOT_FILE_PATH}${jobUuid}${FILE_TYPE_EXT}`
     const uploadParams = {
       Bucket: bucketName,
-      Key: filePath,
+      Key: fullFilePath,
       Body: audioStream
     };
 

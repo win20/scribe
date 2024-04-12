@@ -5,11 +5,12 @@ import (
 	"scribe/server/services"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type Message struct {
+	JobUuid string `json:"jobUuid"`
 	YoutubeUrl string `json:"youtubeUrl"`
-	FilePath string `json:"filePath"`
 }
 
 /* When we hit this endpoint, send url to aws...
@@ -18,22 +19,14 @@ type Message struct {
 func InitiateTranscription(c *fiber.Ctx) error {
 	topicArn := helpers.GetDotenv().ScribeTopicArn
 	youtubeUrl := c.Query("youtubeUrl")
-	filePath := c.Query("filePath")
+	jobUuid := uuid.New()
 
 	object := Message{
+		JobUuid: jobUuid.String(),
 		YoutubeUrl: youtubeUrl,
-		FilePath: filePath,
 	}
 
 	messageString := helpers.ObjectToString(object)
 	messageId := services.Publish(messageString, topicArn)
 	return c.Status(fiber.StatusOK).SendString(messageId)
-}
-
-func extractAudioFromVideoLink(url string) {
-
-}
-
-func storeVideo() {
-
 }
