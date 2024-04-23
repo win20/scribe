@@ -1,4 +1,5 @@
 import { S3Client } from "@aws-sdk/client-s3"
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { Upload } from "@aws-sdk/lib-storage";
 import ytdl from "ytdl-core";
 
@@ -36,6 +37,21 @@ export const handler = async (event, context) => {
       })
 
       await upload.done()
+
+      const topicArn = process.env.TOPIC_ARN
+      const snsClient = new SNSClient({})
+      const command = new PublishCommand({
+        TopicArn: topicArn,
+        Message: jobUuid,
+        MessageAttributes: {
+          'operation': {
+            DataType: 'String',
+            StringValue: 'AUDIO_TO_BE_TRANSCRIBED'
+          }
+        }
+      })
+
+      await snsClient.send(command)
 
       return {
         statusCode: 200,

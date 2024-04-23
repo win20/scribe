@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.540.0",
+    "@aws-sdk/client-sns": "^3.556.0",
     "@aws-sdk/lib-storage": "^3.540.0",
     "ytdl-core": "^4.11.5"
   }

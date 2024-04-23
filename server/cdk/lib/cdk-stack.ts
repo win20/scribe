@@ -1,5 +1,5 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import { Topic } from 'aws-cdk-lib/aws-sns';
+import { Topic, SubscriptionFilter } from 'aws-cdk-lib/aws-sns';
 import { SqsSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -9,6 +9,7 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Construct } from 'constructs';
 import * as path from 'path';
 import { getConfig } from './config';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 const config = getConfig();
 
@@ -17,9 +18,14 @@ export class CdkStack extends Stack {
     super(scope, id, props);
 
     const queue = new Queue(this, `${config.APP_NAME}-queue`, {
-      queueName: config.APP_NAME,
+      queueName: `${config.APP_NAME}-extract-audio-to-s3`,
       visibilityTimeout: Duration.seconds(300)
     });
+
+    const queueAudioToBeTranscribed = new Queue(this, `${config.APP_NAME}-audio-to-be-transcribed`, {
+      queueName: `${config.APP_NAME}-audio-to-be-transcribed`,
+      visibilityTimeout: Duration.seconds(300)
+    })
 
     const topic = new Topic(this, `${config.APP_NAME}-topic`, {
       topicName: config.APP_NAME,
@@ -47,7 +53,26 @@ export class CdkStack extends Stack {
     });
 
     api.root.addMethod('POST', extractAudioToS3Integration);
-    topic.addSubscription(new SqsSubscription(queue));
+    const snsPublishPolicy = new PolicyStatement({
+      actions: ['sns:publish'],
+      resources: ['*'],
+    });
+    lambdaExtractAudioToS3.addToRolePolicy(snsPublishPolicy)
+
+    topic.addSubscription(new SqsSubscription(queue, {
+      filterPolicy: {
+        operation: SubscriptionFilter.stringFilter({
+          allowlist: ['EXTRACT_AUDIO_TO_S3']
+        })
+      }
+    }));
+    topic.addSubscription(new SqsSubscription(queueAudioToBeTranscribed, {
+      filterPolicy: {
+        operation: SubscriptionFilter.stringFilter({
+          allowlist: ['AUDIO_TO_BE_TRANSCRIBED']
+        })
+      }
+    }));
     bucket.grantReadWrite(lambdaExtractAudioToS3);
 
     const eventSource = new SqsEventSource(queue)
