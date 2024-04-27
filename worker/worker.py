@@ -1,10 +1,19 @@
-from queue_client import sqs_client, QUEUE_URL
+from config import config
+import boto3
+
+sqs_client = boto3.client(
+    'sqs',
+    aws_access_key_id=config.aws_key,
+    aws_secret_access_key=config.aws_secret,
+)
 
 
 def worker():
+    queue_url = config.aws_sqs_url
+
     while True:
         response = sqs_client.receive_message(
-            QueueUrl=QUEUE_URL,
+            QueueUrl=queue_url,
             MaxNumberOfMessages=10,
             WaitTimeSeconds=10,
             MessageAttributeNames=['All'],
@@ -14,7 +23,7 @@ def worker():
             print(message)
 
             sqs_client.delete_message(
-                QueueUrl=QUEUE_URL,
+                QueueUrl=queue_url,
                 ReceiptHandle=message['ReceiptHandle']
             )
         else:
