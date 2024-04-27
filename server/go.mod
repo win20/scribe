@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.26.1
 	github.com/aws/aws-sdk-go-v2/config v1.27.11
 	github.com/aws/aws-sdk-go-v2/service/sns v1.29.4
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.31.4
 	github.com/aws/constructs-go/constructs/v10 v10.3.0
 	github.com/aws/jsii-runtime-go v1.96.0
 	github.com/gofiber/fiber/v2 v2.52.4
